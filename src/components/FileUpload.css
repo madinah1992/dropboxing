@@ -1,0 +1,13 @@
+/* src/FileUpload.css */
+.file-upload-container {
+    padding: 20px;
+  }
+  
+  .file-upload-container input {
+    margin-bottom: 10px;
+  }
+  
+  .file-upload-container button {
+    padding: 10px 20px;
+  }
+  

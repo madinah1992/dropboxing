@@ -1,0 +1,32 @@
+/* src/components/Sidebar.css */
+.sidebar {
+  background-color: #f0f0f0;
+  padding: 20px;
+  height: 100%; /* Full height */
+  box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1); /* Optional shadow */
+}
+
+.sidebar h2 {
+  margin-bottom: 20px;
+}
+
+.sidebar ul {
+  list-style: none;
+  padding: 0;
+}
+
+.sidebar li {
+  margin: 10px 0;
+}
+
+.sidebar a {
+  text-decoration: none;
+  color: #333; /* Default link color */
+  padding: 10px;
+  display: block;
+}
+
+.active-link {
+  background-color: #d9d9d9; /* Highlight active link */
+  border-radius: 4px; /* Rounded corners */
+}

@@ -1,0 +1,84 @@
+.feed-container {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+  text-align: center;
+  color: #333;
+}
+
+.upload-toggle-button, .create-folder-button, .upload-button, .add-files-button, .open-folder-button, .delete-file-button, .open-file-button {
+  background-color: #4CAF50;
+  color: white;
+  border: none;
+  padding: 10px 15px;
+  margin: 5px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-toggle-button:hover, .create-folder-button:hover, .upload-button:hover, .add-files-button:hover, .open-folder-button:hover, .delete-file-button:hover, .open-file-button:hover {
+  background-color: #45a049;
+}
+
+.upload-options, .create-folder-container, .add-files-container {
+  margin: 20px 0;
+  padding: 15px;
+  background-color: #fff;
+  border-radius: 5px;
+  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.1);
+}
+
+.upload-preview, .uploaded-files, .folders {
+  margin-top: 20px;
+}
+
+.upload-preview h4, .uploaded-files h4, .folders h4 {
+  margin-bottom: 10px;
+}
+
+.upload-preview ul, .uploaded-files ul, .folders ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+.upload-preview li, .uploaded-files li, .folders li {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px solid #ddd;
+}
+
+.upload-preview li:last-child, .uploaded-files li:last-child, .folders li:last-child {
+  border-bottom: none;
+}
+
+input[type="file"], input[type="text"], input[type="date"], input[type="number"] {
+  margin: 5px 0;
+  padding: 8px;
+  width: calc(100% - 20px);
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+input[type="file"] {
+  padding: 0; /* Prevent extra padding on file input */
+}
+
+.upload-button, .create-folder-button, .open-folder-button, .delete-file-button {
+  margin-left: 5px;
+}
+
+.open-file-button {
+  background-color: #2196F3;
+}
+
+.open-file-button:hover {
+  background-color: #1E88E5;
+}

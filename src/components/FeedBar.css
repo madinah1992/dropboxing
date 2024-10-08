@@ -1,0 +1,41 @@
+/* src/components/FeedBar.css */
+.feedbar-container {
+    display: flex;
+    background-color: #f4f4f4; /* Background color */
+    border-bottom: 1px solid #ddd; /* Border at the bottom */
+    padding: 10px;
+  }
+  
+  .search-container {
+    flex: 1; /* Takes up half of the FeedBar */
+    display: flex;
+    align-items: center;
+  }
+  
+  .search-input {
+    width: 100%; /* Make the input take the full width of the search container */
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #ccc;
+  }
+  
+  .feedbar-items {
+    display: flex;
+    flex-wrap: nowrap; /* Prevent wrapping */
+    align-items: center;
+    gap: 10px; /* Space between items */
+  }
+  
+  .feedbar-icon, .upgrade-button {
+    background: none;
+    border: none;
+    cursor: pointer;
+  }
+  
+  .upgrade-button {
+    background-color: #007ee5;
+    color: white;
+    padding: 5px 10px;
+    border-radius: 5px;
+  }
+  

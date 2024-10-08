@@ -67,8 +67,7 @@ Copy code
 npm start
 This will start the development server, and you can access the application in your web browser at http://localhost:3000.
 ## also you can use the link to my hosted site  
- https://66f68eddaf1c2e2a556e631a--earnest-mooncake-8a9081.netlify.app/
-
+https://frolicking-biscuit-0597f2.netlify.app/
 
 The Core Team
 Abdulkarim Madinah - otni

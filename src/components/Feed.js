@@ -1,371 +1,93 @@
-// import React, { useState, useEffect } from 'react';
-// import { storage, db } from '../firebase'; 
-// import { ref, deleteObject, getDownloadURL } from "firebase/storage";
-// import { collection, addDoc, getDocs, deleteDoc, doc, query, where } from "firebase/firestore"; 
-// import './Feed.css';
-// // import { useNavigate } from 'react-router-dom';
-// import { uploadBytes } from 'firebase/storage';
-// import FileViewer from './FileViewer'; // Adjust the path if necessary
-// import { useAuth } from '../contexts/AuthProvider'; // Import the useAuth hook
-
-// const Feed = () => {
-//   const { currentUser } = useAuth(); // Access the current user from the Auth context
-//   const [showUploadOptions, setShowUploadOptions] = useState(false);
-//   const [selectedFiles, setSelectedFiles] = useState([]);
-//   const [folderName, setFolderName] = useState('');
-//   const [folders, setFolders] = useState([]);
-//   const [uploadedFiles, setUploadedFiles] = useState([]); // Now an array of objects
-//   const [showCreateFolder, setShowCreateFolder] = useState(false);
-//   const [fileToView, setFileToView] = useState(null);
-//   const [currentFolder, setCurrentFolder] = useState(null);
-//   const [setCurrentFolderFiles] = useState([]);
-//   const [expirationDate, setExpirationDate] = useState(''); // State for expiration date
-//   const [version, setVersion] = useState(1); // State for versioning
-//   const [showAddFiles, setShowAddFiles] = useState(false); // State to show "Add Files" button
-
-//   useEffect(() => {
-//     fetchFolders();
-//     if (currentUser) {
-//       fetchUploadedFiles(); // Fetch uploaded files for the current user
-//     }
-//   }, [currentUser]); // Dependency on currentUser to refetch when it changes
-
-//   const fetchFolders = async () => {
-//     try {
-//       const foldersCollection = collection(db, 'folders');
-//       const snapshot = await getDocs(foldersCollection);
-//       const foldersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-//       setFolders(foldersList);
-//     } catch (error) {
-//       console.error("Error fetching folders:", error);
-//     }
-//   };
-
-//   // New function to fetch uploaded files for the current user
-//   const fetchUploadedFiles = async () => {
-//     try {
-//       const filesCollection = collection(db, 'files');
-//       const q = query(filesCollection, where('uploadedBy', '==', currentUser.uid));
-//       const snapshot = await getDocs(q);
-//       const filesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-//       setUploadedFiles(filesList); // Update state with the user's files
-//     } catch (error) {
-//       console.error("Error fetching uploaded files:", error);
-//     }
-//   };
-
-//   const uploadFiles = async () => {
-//     const promises = selectedFiles.map(async (file) => {
-//       const fileRef = ref(storage, `files/${file.name}`);
-//       await uploadBytes(fileRef, file); // Include the file in the upload
-
-//       // Generate the download URL after the file is uploaded
-//       const downloadURL = await getDownloadURL(fileRef);
-
-//       // Save file details to Firestore
-//       const fileDetails = {
-//         name: file.name,
-//         version: version, // Store the version
-//         expiration: expirationDate, // Store expiration date
-//         uploadedAt: new Date(),
-//         uploadedBy: currentUser?.uid, // Save the user ID who uploaded the file
-//         url: downloadURL // Store the download URL
-//       };
-
-//       // Add file details to Firestore
-//       const filesCollection = collection(db, 'files'); // Adjust the path as needed
-//       await addDoc(filesCollection, fileDetails); // Add the file details to Firestore
-//       return fileDetails; // Return the file details object after successful upload
-//     });
-
-//     try {
-//       const uploadedFileDetails = await Promise.all(promises);
-//       alert("Files uploaded successfully!");
-//       setUploadedFiles([...uploadedFiles, ...uploadedFileDetails]); // Store the file details
-//       setSelectedFiles([]);
-//       setShowUploadOptions(false);
-//       if (currentFolder) {
-//         fetchCurrentFolderFiles(currentFolder.id); // Fetch files for the current folder after upload
-//       }
-//     } catch (error) {
-//       console.error("Error uploading files:", error);
-//     }
-//   };
-
-//   const fetchCurrentFolderFiles = async (folderId) => {
-//     try {
-//       const filesCollection = collection(db, 'files');
-//       const q = query(filesCollection, where('folderId', '==', folderId));
-//       const snapshot = await getDocs(q);
-//       const filesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-//       setCurrentFolderFiles(filesList); // Update state with the folder's files
-//     } catch (error) {
-//       console.error("Error fetching folder files:", error);
-//     }
-//   };
-  
-
-//   const createFolder = async () => {
-//     if (folderName.trim() !== '') {
-//       const newFolder = {
-//         name: folderName,
-//         createdAt: new Date(),
-//         createdBy: currentUser?.uid, // Save the user ID who created the folder
-//       };
-//       try {
-//         const foldersCollection = collection(db, 'folders');
-//         await addDoc(foldersCollection, newFolder);
-//         setFolders([...folders, newFolder]);
-//         setFolderName('');
-//         alert('Folder created successfully!');
-//       } catch (error) {
-//         console.error("Error creating folder:", error);
-//         alert('Failed to create folder. Please try again.');
-//       }
-//     } else {
-//       alert('Folder name cannot be empty.');
-//     }
-//   };
-
-//   const deleteFile = async (fileName) => {
-//     const fileRef = ref(storage, `files/${fileName}`);
-//     try {
-//       await deleteObject(fileRef);
-//       alert("File deleted successfully!");
-//       setUploadedFiles(uploadedFiles.filter(file => file.name !== fileName)); // Filter out the deleted file
-//     } catch (error) {
-//       console.error("Error deleting file:", error);
-//       alert("Failed to delete file. Please try again.");
-//     }
-//   };
-
-//   const openFile = (fileName) => {
-//     setFileToView(fileName);
-//   };
-
-//   const closeFileViewer = () => {
-//     setFileToView(null);
-//   };
-
-//   const deleteFolder = async (folderId) => {
-//     try {
-//       const folderRef = doc(db, 'folders', folderId);
-//       await deleteDoc(folderRef);
-//       alert("Folder deleted successfully!");
-//       setFolders(folders.filter(folder => folder.id !== folderId));
-//     } catch (error) {
-//       console.error("Error deleting folder:", error);
-//       alert("Failed to delete folder. Please try again.");
-//     }
-//   };
-
-//   const openFolder = async (folder) => {
-//     setCurrentFolder(folder);
-//     setCurrentFolderFiles([]); 
-//     setShowAddFiles(true); // Show "Add Files" button when folder is opened
-//     console.log(`Opening folder: ${folder.name}`);
-//   };
-
-//   // Function to handle adding files to the current folder
-//   const handleAddFilesToFolder = () => {
-//     // Implement logic to add files to the current folder
-//     // This could involve showing an upload dialog or similar
-//     // For example, you could show upload options specific to the folder
-//     setShowUploadOptions(true);
-//   };
-
-//   return (
-//     <div className="feed-container">
-//       <h1>Home</h1>
-
-//       <button onClick={() => setShowUploadOptions(!showUploadOptions)} className="upload-toggle-button">
-//         Upload
-//       </button>
-//       <button onClick={() => setShowCreateFolder(!showCreateFolder)} className="create-folder-button">
-//         + Create
-//       </button>
-
-//       {showUploadOptions && (
-//         <div className="upload-options">
-//           <label className="upload-button">
-//             <input type="file" multiple onChange={(e) => setSelectedFiles(Array.from(e.target.files))} style={{ display: 'none' }} />
-//             <span> Files </span>
-//           </label>
-//           <label>
-//             <span>Expiration Date:</span>
-//             <input type="date" value={expirationDate} onChange={(e) => setExpirationDate(e.target.value)} />
-//           </label>
-//           <label>
-//             <span>Version:</span>
-//             <input type="number" value={version} onChange={(e) => setVersion(Number(e.target.value))} min="1" />
-//           </label>
-//           <button onClick={uploadFiles} className="upload-button">
-//             Confirm Upload
-//           </button>
-//         </div>
-//       )}
-
-//       {showCreateFolder && (
-//         <div className="create-folder-container">
-//           <input type="text" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder="Enter folder name" />
-//           <button onClick={createFolder} className="create-folder-button">Create Folder</button>
-//         </div>
-//       )}
-
-//       <div className="upload-preview">
-//         {selectedFiles.length > 0 && (
-//           <div>
-//             <h4>Selected Files:</h4>
-//             <ul>
-//               {selectedFiles.map((file, index) => (
-//                 <li key={index}>{file.name}</li>
-//               ))}
-//             </ul>
-//           </div>
-//         )}
-//       </div>
-
-//       <div className="uploaded-files">
-//         {uploadedFiles.length > 0 && (
-//           <div>
-//             <h4>Uploaded Files:</h4>
-//             <ul>
-//               {uploadedFiles.map((file, index) => (
-//                 <li key={index}>
-//                   {file.name}
-//                   <a href={file.url} target="_blank" rel="noopener noreferrer"> View</a> {/* Display the file URL */}
-//                   <button onClick={() => openFile(file.name)} className="open-file-button">Open</button>
-//                   <button onClick={() => deleteFile(file.name)} className="delete-file-button">Delete</button>
-//                 </li>
-//               ))}
-//             </ul>
-//           </div>
-//         )}
-//       </div>
-
-//       <div className="folders">
-//         {folders.length > 0 && (
-//           <div>
-//             <h4>Folders:</h4>
-//             <ul>
-//               {folders.map((folder) => (
-//                 <li key={folder.id}>
-//                   {folder.name}
-//                   <button onClick={() => openFolder(folder)} className="open-folder-button">Open</button>
-//                   <button onClick={() => deleteFolder(folder.id)} className="delete-folder-button">Delete</button>
-//                 </li>
-//               ))}
-//             </ul>
-//           </div>
-//         )}
-//       </div>
-
-//       {/* Conditionally render "Add Files" button when a folder is open */}
-//       {showAddFiles && currentFolder && (
-//         <div className="add-files-container">
-//           <h4>Add Files to {currentFolder.name}:</h4>
-//           <button onClick={handleAddFilesToFolder} className="add-files-button">Add Files</button>
-//         </div>
-//       )}
-
-//       {/* Render File Viewer if fileToView is set */}
-//       {fileToView && <FileViewer fileName={fileToView} onClose={closeFileViewer} />}
-//     </div>
-//   );
-// };
-
-// export default Feed;
-
-
-
-
 import React, { useState, useEffect, useCallback } from 'react';
-import { storage, db } from '../firebase'; 
+import { storage, db } from '../firebase';
 import { ref, deleteObject, getDownloadURL } from "firebase/storage";
-import { collection, addDoc, getDocs, deleteDoc, doc, query, where } from "firebase/firestore"; 
+import { collection, addDoc, getDocs, deleteDoc, doc, query, where } from "firebase/firestore";
 import './Feed.css';
-// import { useNavigate } from 'react-router-dom';
 import { uploadBytes } from 'firebase/storage';
 import FileViewer from './FileViewer'; // Adjust the path if necessary
 import { useAuth } from '../contexts/AuthProvider'; // Import the useAuth hook
 
 const Feed = () => {
-  const { currentUser } = useAuth(); // Access the current user from the Auth context
+  const { currentUser } = useAuth();
   const [showUploadOptions, setShowUploadOptions] = useState(false);
   const [selectedFiles, setSelectedFiles] = useState([]);
   const [folderName, setFolderName] = useState('');
   const [folders, setFolders] = useState([]);
-  const [uploadedFiles, setUploadedFiles] = useState([]); // Now an array of objects
+  const [uploadedFiles, setUploadedFiles] = useState([]);
   const [showCreateFolder, setShowCreateFolder] = useState(false);
   const [fileToView, setFileToView] = useState(null);
   const [currentFolder, setCurrentFolder] = useState(null);
-  const [expirationDate, setExpirationDate] = useState(''); // State for expiration date
-  const [version, setVersion] = useState(1); // State for versioning
-  const [showAddFiles, setShowAddFiles] = useState(false); // State to show "Add Files" button
-
-  // Moved fetchUploadedFiles inside useCallback
+  const [currentFolderFiles, setCurrentFolderFiles] = useState([]);
+  const [expirationDate, setExpirationDate] = useState('');
+  const [version, setVersion] = useState(1);
+  const [showAddFiles, setShowAddFiles] = useState(false);
+  
   const fetchUploadedFiles = useCallback(async () => {
     try {
-      const filesCollection = collection(db, 'files');
-      const q = query(filesCollection, where('uploadedBy', '==', currentUser.uid));
-      const snapshot = await getDocs(q);
-      const filesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      setUploadedFiles(filesList); // Update state with the user's files
+      const response = await fetch('/api/files'); // Example API endpoint
+      const data = await response.json();
+      setUploadedFiles(data);
     } catch (error) {
-      console.error("Error fetching uploaded files:", error);
+      console.error("Error fetching files:", error);
     }
-  }, [currentUser]); // Add currentUser as a dependency
+  }, []); // Dependencies of fetchUploadedFiles (if any)
 
+  
+
+  // UseEffect to call fetchUploadedFiles
   useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const foldersCollection = collection(db, 'folders');
-        const snapshot = await getDocs(foldersCollection);
-        const foldersList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-        setFolders(foldersList);
-      } catch (error) {
-        console.error("Error fetching folders:", error);
-      }
-    };
+    fetchUploadedFiles(); // Call the function defined above
+  }, [fetchUploadedFiles]); // Include fetchUploadedFiles in the dependencies
 
-    fetchFolders();
-    if (currentUser) {
-      fetchUploadedFiles(); // Fetch uploaded files for the current user
-    }
-  }, [currentUser, fetchUploadedFiles]); // Include fetchUploadedFiles in the dependency array
+  // useEffect(() => {
+  //   fetchFolders();
+  //   if (currentUser) {
+  //     fetchUploadedFiles();
+  //   }
+  // }, [currentUser]);
+
+  
+
+  // const fetchUploadedFiles = async () => {
+  //   try {
+  //     const filesCollection = collection(db, 'files');
+  //     const q = query(filesCollection, where('uploadedBy', '==', currentUser.uid));
+  //     const snapshot = await getDocs(q);
+  //     const filesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  //     setUploadedFiles(filesList);
+  //   } catch (error) {
+  //     console.error("Error fetching uploaded files:", error);
+  //   }
+  // };
 
   const uploadFiles = async () => {
     const promises = selectedFiles.map(async (file) => {
       const fileRef = ref(storage, `files/${file.name}`);
-      await uploadBytes(fileRef, file); // Include the file in the upload
+      await uploadBytes(fileRef, file);
 
-      // Generate the download URL after the file is uploaded
       const downloadURL = await getDownloadURL(fileRef);
-
-      // Save file details to Firestore
       const fileDetails = {
         name: file.name,
-        version: version, // Store the version
-        expiration: expirationDate, // Store expiration date
+        version: version,
+        expiration: expirationDate,
         uploadedAt: new Date(),
-        uploadedBy: currentUser?.uid, // Save the user ID who uploaded the file
-        url: downloadURL // Store the download URL
+        uploadedBy: currentUser?.uid,
+        url: downloadURL
       };
 
-      // Add file details to Firestore
-      const filesCollection = collection(db, 'files'); // Adjust the path as needed
-      await addDoc(filesCollection, fileDetails); // Add the file details to Firestore
-      return fileDetails; // Return the file details object after successful upload
+      const filesCollection = collection(db, 'files');
+      await addDoc(filesCollection, fileDetails);
+      return fileDetails;
     });
 
     try {
       const uploadedFileDetails = await Promise.all(promises);
       alert("Files uploaded successfully!");
-      setUploadedFiles([...uploadedFiles, ...uploadedFileDetails]); // Store the file details
+      setUploadedFiles([...uploadedFiles, ...uploadedFileDetails]);
       setSelectedFiles([]);
       setShowUploadOptions(false);
       if (currentFolder) {
-        fetchCurrentFolderFiles(currentFolder.id); // Fetch files for the current folder after upload
+        fetchCurrentFolderFiles(currentFolder.id);
       }
     } catch (error) {
       console.error("Error uploading files:", error);
@@ -378,24 +100,23 @@ const Feed = () => {
       const q = query(filesCollection, where('folderId', '==', folderId));
       const snapshot = await getDocs(q);
       const filesList = snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      // If you need to do something with filesList, do it here
+      setCurrentFolderFiles(filesList);
     } catch (error) {
       console.error("Error fetching folder files:", error);
     }
   };
-  
 
   const createFolder = async () => {
     if (folderName.trim() !== '') {
       const newFolder = {
         name: folderName,
         createdAt: new Date(),
-        createdBy: currentUser?.uid, // Save the user ID who created the folder
+        createdBy: currentUser?.uid,
       };
       try {
         const foldersCollection = collection(db, 'folders');
-        const docRef = await addDoc(foldersCollection, newFolder); // Get reference to the created folder
-        setFolders([...folders, { id: docRef.id, ...newFolder }]); // Store the newly created folder with ID
+        await addDoc(foldersCollection, newFolder);
+        setFolders([...folders, newFolder]);
         setFolderName('');
         alert('Folder created successfully!');
       } catch (error) {
@@ -407,13 +128,12 @@ const Feed = () => {
     }
   };
 
-  const deleteFile = async (fileId, fileName) => {
+  const deleteFile = async (fileName) => {
     const fileRef = ref(storage, `files/${fileName}`);
     try {
       await deleteObject(fileRef);
-      await deleteDoc(doc(db, 'files', fileId)); // Delete the file document from Firestore
       alert("File deleted successfully!");
-      setUploadedFiles(uploadedFiles.filter(file => file.id !== fileId)); // Filter out the deleted file
+      setUploadedFiles(uploadedFiles.filter(file => file.name !== fileName));
     } catch (error) {
       console.error("Error deleting file:", error);
       alert("Failed to delete file. Please try again.");
@@ -442,13 +162,13 @@ const Feed = () => {
 
   const openFolder = async (folder) => {
     setCurrentFolder(folder);
-    setShowAddFiles(true); // Show "Add Files" button when folder is opened
-    fetchCurrentFolderFiles(folder.id); // Fetch files for the opened folder
+    setCurrentFolderFiles([]);
+    setShowAddFiles(true);
     console.log(`Opening folder: ${folder.name}`);
   };
 
   const handleAddFilesToFolder = () => {
-    setShowUploadOptions(true); // Show upload options for the folder
+    setShowUploadOptions(true);
   };
 
   return (
@@ -466,7 +186,7 @@ const Feed = () => {
         <div className="upload-options">
           <label className="upload-button">
             <input type="file" multiple onChange={(e) => setSelectedFiles(Array.from(e.target.files))} style={{ display: 'none' }} />
-            <span> Files </span>
+            <span> Select Files </span>
           </label>
           <label>
             <span>Expiration Date:</span>
@@ -474,54 +194,88 @@ const Feed = () => {
           </label>
           <label>
             <span>Version:</span>
-            <input type="number" value={version} onChange={(e) => setVersion(e.target.value)} />
+            <input type="number" value={version} onChange={(e) => setVersion(Number(e.target.value))} min="1" />
           </label>
-          <button onClick={uploadFiles}>Upload Files</button>
+          <button onClick={uploadFiles} className="upload-button">
+            Confirm Upload
+          </button>
         </div>
       )}
 
       {showCreateFolder && (
-        <div className="create-folder">
+        <div className="create-folder-container">
           <input type="text" value={folderName} onChange={(e) => setFolderName(e.target.value)} placeholder="Enter folder name" />
-          <button onClick={createFolder}>Create Folder</button>
+          <button onClick={createFolder} className="create-folder-button">Create Folder</button>
         </div>
       )}
 
-      <div className="folder-list">
-        <h4>Your Folders</h4>
-        <ul>
-          {folders.map(folder => (
-            <li key={folder.id} onClick={() => openFolder(folder)}>
-              {folder.name}
-              <button onClick={() => deleteFolder(folder.id)}>Delete</button>
-            </li>
-          ))}
-        </ul>
+      <div className="upload-preview">
+        {selectedFiles.length > 0 && (
+          <div>
+            <h4>Selected Files:</h4>
+            <ul>
+              {selectedFiles.map((file, index) => (
+                <li key={index}>{file.name}</li>
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
 
-      {showAddFiles && (
-        <button onClick={handleAddFilesToFolder} className="add-files-to-folder-button">
-          Add Files to Folder
-        </button>
+      <div className="uploaded-files">
+        {uploadedFiles.length > 0 && (
+          <div>
+            <h4>Uploaded Files:</h4>
+            <ul>
+              {uploadedFiles.map((file, index) => (
+                <li key={index}>
+                  {file.name}
+                  <a href={file.url} target="_blank" rel="noopener noreferrer"> View</a>
+                  <button onClick={() => openFile(file.name)} className="open-file-button">Open</button>
+                  <button onClick={() => deleteFile(file.name)} className="delete-file-button">Delete</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      <div className="folders">
+        {folders.length > 0 && (
+          <div>
+            <h4>Folders:</h4>
+            <ul>
+              {folders.map((folder) => (
+                <li key={folder.id}>
+                  {folder.name}
+                  <button onClick={() => openFolder(folder)} className="open-folder-button">Open</button>
+                  <button onClick={() => deleteFolder(folder.id)} className="delete-folder-button">Delete</button>
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+
+      {showAddFiles && currentFolder && (
+        <div className="add-files-container">
+          <h4>Files in {currentFolder.name}</h4>
+          <button onClick={handleAddFilesToFolder} className="add-files-button">+ Add Files</button>
+          {currentFolderFiles.length > 0 && (
+            <ul>
+              {currentFolderFiles.map((file, index) => (
+                <li key={index}>
+                  {file.name}
+                  <button onClick={() => deleteFile(file.name)} className="delete-file-button">Delete</button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
       )}
-
-      <div className="file-list">
-        <h4>Your Files</h4>
-        <ul>
-          {uploadedFiles.map(file => (
-            <li key={file.id}>
-              {file.name}
-              <button onClick={() => openFile(file.url)}>View</button>
-              <button onClick={() => deleteFile(file.id, file.name)}>Delete</button>
-            </li>
-          ))}
-        </ul>
-      </div>
 
       {fileToView && (
-        <div className="file-viewer">
-          <FileViewer file={fileToView} onClose={closeFileViewer} />
-        </div>
+        <FileViewer fileName={fileToView} onClose={closeFileViewer} />
       )}
     </div>
   );
